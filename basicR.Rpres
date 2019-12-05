@@ -99,11 +99,16 @@ Overview
 - stackoverflow/crossvalidated
 - AalborgRUG (meetup)
 
+<div align="left">
+<img src="https://helm-assets.s3.eu-west-2.amazonaws.com/events/event2695/292fd362ea-2.jpg" width=660 height=500 style="background:none; border:none; box-shadow:none;">
+</div>
+
 ```{r include=FALSE}
 library(tidyverse)
 library(Quandl)
 library(tidyverse)
 library(lubridate)
+library(knitr)
 key <- "WB3WH-RUprDSyH2xaLbu"
 ```
 
@@ -114,17 +119,34 @@ History
 compiled vs. interpeted languages
 
 - R created in 1993 from the language S
-- Quickly adopted by statestians
+- Quickly adopted by statisticians
 - inspired pandas in python
 - split into 3 dialects (`base`, `datatable`, `tidyverse`)
 
 
+## Advantages
+- It is open source, and free in contrast to the expensive commercial solutions (SAS, Stata, SPSS, EViews, Matlab)
+- Since it's free it's easy for others to replicate results
+- A huge library of packages with tools for statistical modeling, machine learning, visualizing and manipulating data.
 
-file extension: .r og .rdata
 
-## difference
-- Python - If you want to work with engeeneis
-- R - If you want to work with statestians
+
+
+file extensions: .r, .rdata, .rda, .rmd
+
+## Which language?
+- Python - If you want to work with engineers
+- R - If you want to work with statisticians
+
+***
+
+<div align="center">
+<img src="https://www.smartcat.io/media/1660/tidyverse.png?width=500&height=320" width=1000 height=680 style="background:none; border:none; box-shadow:none;">
+</div>
+
+<div align="center">
+<img src="https://avatars0.githubusercontent.com/u/7824179?s=400&v=4" width=430 height=430 style="background:none; border:none; box-shadow:none;">
+</div>
 
 Data Structures
 ========================================================
@@ -246,13 +268,13 @@ long <- relig_income %>%
                values_to = "value", 
                -religion)
 
-long %>% group_by(religion) %>% summarize(n = n())
+long %>% group_by(religion) %>% summarize(n = n()) %>% head(10)
 ```
 
 ***
 
 ```{r}
-long %>% group_by(religion) %>% summarize(n = sum(value))
+long %>% group_by(religion) %>% summarize(n = sum(value)) %>% head(10)
 long %>% group_by(income) %>% summarize(n = sum(value))
 ```
 
@@ -263,22 +285,22 @@ long %>% group_by(income) %>% summarize(n = sum(value))
 For-loops
 ========================================================
 
-For-loops are easy and usefull, but can sometimes be slow
+```{r fig.align = "center", out.width = '80%', fig.height=3, fig.width=7, dpi=400}
 
-```{r fig.align = "center", out.width = '80%', fig.height=4, fig.width=7, dpi=400}
+y <- rbinom(100, 1, prob = 0.5)
+x <- abs(rnorm(100)) + y
 
-y = rbinom(100, 1, prob = 0.5)
-x = abs(rnorm(100)) + y * 2
+fit <- glm(y ~ x, family = "binomial")
+fit$coefficients
 
-g <- glm(y ~ x, family = "binomial")
-g
-
-plot(x, y, ylim=c(-0.5,1.5))
-curve(predict(g, data.frame(x), type="resp"), add = TRUE)
+ggplot(tibble(x,y), aes(x=x, y=y)) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, color="grey") +
+  geom_point() + labs(title="Logistic Regression")
 ```
 
 ***
-We can put this simple logistic model into a for-loop
+
+For-loops are easy and usefull, but can sometimes be slow. I calculate simulate data and calculate a logistic regression, i then run this 10 times in a for-loop each time saving the coeffecient.
 
 ```{r}
 
@@ -294,7 +316,7 @@ for (i in 1:10) {
   
 }
 
-fits
+kable(fits)
 
 ```
 
@@ -707,7 +729,7 @@ API acess with Quandl
 
 - Create user to get API key
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 library(Quandl)
 library(tidyverse)
 library(lubridate)
@@ -718,7 +740,7 @@ head(ZERO)[1:4]
 
 ***
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 range(ZERO$Date)
 difftime(range(ZERO$Date)[2],range(ZERO$Date)[1])
 
@@ -729,7 +751,7 @@ nrow(ZERO)
 Quandl 2/9
 ====================================
 
-```{r echo=FALSE, fig.align="center", fig.height=6, fig.width=12, dpi=400, out.width='100%', eval=FALSE}
+```{r echo=FALSE, fig.align="center", fig.height=6, fig.width=12, dpi=400, out.width='100%', eval=TRUE}
 tibble(date = seq(as.Date("1961-01-01"),
                   as.Date("2019-12-31"), 
                   by = "day")) %>% 
@@ -749,7 +771,7 @@ tibble(date = seq(as.Date("1961-01-01"),
 Quandl 3/9
 ====================================
 
-```{r fig.align = "center", out.width = '100%', fig.height=5.5, fig.width=12, dpi=400, eval=FALSE}
+```{r fig.align = "center", out.width = '100%', fig.height=5.5, fig.width=12, dpi=400, eval=TRUE}
 ZERO %>% 
   pivot_longer(-Date, names_to = "Maturity", values_to = "Value") %>% 
   mutate(Maturity = as.numeric(str_extract(Maturity, pattern="[:digit:]+"))) %>% 
@@ -759,7 +781,7 @@ ZERO %>%
 Quandl 4/9
 ====================================
 
-```{r fig.align = "center", out.width = '100%', fig.height=5.5, fig.width=12, dpi=400, eval=FALSE}
+```{r fig.align = "center", out.width = '100%', fig.height=5.5, fig.width=12, dpi=400, eval=TRUE}
 ZERO %>% pivot_longer(-Date, names_to = "Maturity", values_to = "Value") %>% 
   mutate(Maturity = as.numeric(str_extract(Maturity, pattern="[:digit:]+"))) %>% 
   filter(Date>as.Date("1989-12-31")) %>% 
@@ -771,7 +793,7 @@ ZERO %>% pivot_longer(-Date, names_to = "Maturity", values_to = "Value") %>%
 Quandl 5/9
 ====================================
 
-```{r fig.align = "center", out.width = '100%', fig.height=5, fig.width=12, dpi=400, eval=FALSE}
+```{r fig.align = "center", out.width = '100%', fig.height=5, fig.width=12, dpi=400, eval=TRUE}
 ZERO_S <- ZERO %>% filter(Date > "2000-01-01") %>% subset(day(Date) == 1) 
 ZERO_M <- ZERO_S %>% dplyr::select(-Date) %>% as.matrix()
 date <- rev(decimal_date(ZERO_S$Date))

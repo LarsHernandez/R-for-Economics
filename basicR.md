@@ -99,6 +99,10 @@ Overview
 - stackoverflow/crossvalidated
 - AalborgRUG (meetup)
 
+<div align="left">
+<img src="https://helm-assets.s3.eu-west-2.amazonaws.com/events/event2695/292fd362ea-2.jpg" width=660 height=500 style="background:none; border:none; box-shadow:none;">
+</div>
+
 
 
 
@@ -108,17 +112,34 @@ History
 compiled vs. interpeted languages
 
 - R created in 1993 from the language S
-- Quickly adopted by statestians
+- Quickly adopted by statisticians
 - inspired pandas in python
 - split into 3 dialects (`base`, `datatable`, `tidyverse`)
 
 
+## Advantages
+- It is open source, and free in contrast to the expensive commercial solutions (SAS, Stata, SPSS, EViews, Matlab)
+- Since it's free it's easy for others to replicate results
+- A huge library of packages with tools for statistical modeling, machine learning, visualizing and manipulating data.
 
-file extension: .r og .rdata
 
-## difference
-- Python - If you want to work with engeeneis
-- R - If you want to work with statestians
+
+
+file extensions: .r, .rdata, .rda, .rmd
+
+## Which language?
+- Python - If you want to work with engineers
+- R - If you want to work with statisticians
+
+***
+
+<div align="center">
+<img src="https://www.smartcat.io/media/1660/tidyverse.png?width=500&height=320" width=1000 height=680 style="background:none; border:none; box-shadow:none;">
+</div>
+
+<div align="center">
+<img src="https://avatars0.githubusercontent.com/u/7824179?s=400&v=4" width=430 height=430 style="background:none; border:none; box-shadow:none;">
+</div>
 
 Data Structures
 ========================================================
@@ -246,8 +267,8 @@ z
 ```
 
 ```
- [1] 1.608812 4.516379 4.320420 4.650014 4.169747 5.701009 4.512256 5.843102
- [9] 2.639855 1.489207
+ [1] 3.271874 3.924927 3.209613 4.757986 4.615037 2.572965 2.524733 4.557389
+ [9] 5.955444 2.895641
 ```
 
 ```r
@@ -255,7 +276,7 @@ my_mean(z)
 ```
 
 ```
-[1] 3.94508
+[1] 3.828561
 ```
 
 
@@ -274,13 +295,13 @@ head(df)
 ```
 
 ```
-           x        y        z
-1  0.6733856 3.271608 9.372090
-2  1.0029174 4.465537 8.718469
-3 -0.5127380 4.828044 6.776003
-4 -1.3111109 3.896242 8.094523
-5  1.3817918 4.631874 8.217721
-6  0.8619629 3.416283 8.024398
+             x        y        z
+1 -0.731675335 2.305176 7.755123
+2  0.684088182 3.520395 8.906487
+3  0.071702470 4.409415 7.555683
+4  0.058832368 3.527037 8.714595
+5 -0.568563717 3.528980 7.691625
+6 -0.004764305 5.554057 7.047859
 ```
 
 ```r
@@ -288,8 +309,8 @@ apply(df, MARGIN = 2, FUN = my_mean)
 ```
 
 ```
-       x        y        z 
-0.171587 3.920761 8.021660 
+          x           y           z 
+-0.01170613  4.12553694  8.05463697 
 ```
 
 FUN specifies the function and MARGIN specifies wether to apply to rows or columns. You could get the same result with a forloop but often apply will be more effecient.
@@ -373,11 +394,11 @@ long <- relig_income %>%
                values_to = "value", 
                -religion)
 
-long %>% group_by(religion) %>% summarize(n = n())
+long %>% group_by(religion) %>% summarize(n = n()) %>% head(10)
 ```
 
 ```
-# A tibble: 18 x 2
+# A tibble: 10 x 2
    religion                    n
    <chr>                   <int>
  1 Agnostic                   10
@@ -390,25 +411,17 @@ long %>% group_by(religion) %>% summarize(n = n())
  8 Historically Black Prot    10
  9 Jehovah's Witness          10
 10 Jewish                     10
-11 Mainline Prot              10
-12 Mormon                     10
-13 Muslim                     10
-14 Orthodox                   10
-15 Other Christian            10
-16 Other Faiths               10
-17 Other World Religions      10
-18 Unaffiliated               10
 ```
 
 ***
 
 
 ```r
-long %>% group_by(religion) %>% summarize(n = sum(value))
+long %>% group_by(religion) %>% summarize(n = sum(value)) %>% head(10)
 ```
 
 ```
-# A tibble: 18 x 2
+# A tibble: 10 x 2
    religion                    n
    <chr>                   <dbl>
  1 Agnostic                  826
@@ -421,14 +434,6 @@ long %>% group_by(religion) %>% summarize(n = sum(value))
  8 Historically Black Prot  1995
  9 Jehovah's Witness         215
 10 Jewish                    682
-11 Mainline Prot            7470
-12 Mormon                    581
-13 Muslim                    116
-14 Orthodox                  363
-15 Other Christian           129
-16 Other Faiths              449
-17 Other World Religions      42
-18 Unaffiliated             3707
 ```
 
 ```r
@@ -458,39 +463,31 @@ long %>% group_by(income) %>% summarize(n = sum(value))
 For-loops
 ========================================================
 
-For-loops are easy and usefull, but can sometimes be slow
-
 
 ```r
-y = rbinom(100, 1, prob = 0.5)
-x = abs(rnorm(100)) + y * 2
+y <- rbinom(100, 1, prob = 0.5)
+x <- abs(rnorm(100)) + y
 
-g <- glm(y ~ x, family = "binomial")
-g
+fit <- glm(y ~ x, family = "binomial")
+fit$coefficients
 ```
 
 ```
-
-Call:  glm(formula = y ~ x, family = "binomial")
-
-Coefficients:
-(Intercept)            x  
-     -11016         5450  
-
-Degrees of Freedom: 99 Total (i.e. Null);  98 Residual
-Null Deviance:	    138.6 
-Residual Deviance: 5.783e-06 	AIC: 4
+(Intercept)           x 
+  -4.805890    4.082138 
 ```
 
 ```r
-plot(x, y, ylim=c(-0.5,1.5))
-curve(predict(g, data.frame(x), type="resp"), add = TRUE)
+ggplot(tibble(x,y), aes(x=x, y=y)) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, color="grey") +
+  geom_point() + labs(title="Logistic Regression")
 ```
 
 <img src="basicR-figure/unnamed-chunk-10-1.png" title="plot of chunk unnamed-chunk-10" alt="plot of chunk unnamed-chunk-10" width="80%" style="display: block; margin: auto;" />
 
 ***
-We can put this simple logistic model into a for-loop
+
+For-loops are easy and usefull, but can sometimes be slow. I calculate simulate data and calculate a logistic regression, i then run this 10 times in a for-loop each time saving the coeffecient.
 
 
 ```r
@@ -506,13 +503,23 @@ for (i in 1:10) {
   
 }
 
-fits
+kable(fits)
 ```
 
-```
- [1]    4.566354    8.508347    5.705026    8.065975   19.926424 1308.356866
- [7]    6.268552    8.980511    6.568836  110.454141
-```
+
+
+|         x|
+|---------:|
+| 10.605156|
+|  5.183389|
+|  7.733465|
+|  4.802249|
+|  5.353973|
+|  5.269631|
+|  6.282571|
+|  4.970759|
+|  4.164202|
+|  5.179387|
 
 
 
@@ -544,7 +551,7 @@ head(df)
 1 B   Apple
 2 B    pear
 3 B   Apple
-4 A bananna
+4 B bananna
 5 B   Apple
 6 B    pear
 ```
@@ -556,8 +563,8 @@ table(df$x, df$y)
 ```
    
     Apple bananna pear
-  A     9       9    6
-  B    41      16   19
+  A     4       4    4
+  B    46      21   21
 ```
 
 
@@ -851,7 +858,7 @@ stargazer(m1, m2, m3, column.labels = c("Good","Better", "Best"))
 ```
 
 % Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
-% Date and time: ma, dec 02, 2019 - 09:02:10
+% Date and time: on, dec 04, 2019 - 21:07:29
 \begin{table}[!htbp] \centering 
   \caption{} 
   \label{} 
@@ -1125,21 +1132,48 @@ ZERO <- Quandl("FED/SVENY", api_key = key)
 head(ZERO)[1:4]
 ```
 
+```
+        Date SVENY01 SVENY02 SVENY03
+1 2019-11-29  1.6760  1.6416  1.6291
+2 2019-11-27  1.6784  1.6520  1.6405
+3 2019-11-26  1.6448  1.6118  1.5971
+4 2019-11-25  1.6506  1.6282  1.6199
+5 2019-11-22  1.6508  1.6296  1.6223
+6 2019-11-21  1.6364  1.6169  1.6114
+```
+
 ***
 
 
 ```r
 range(ZERO$Date)
-difftime(range(ZERO$Date)[2],range(ZERO$Date)[1])
+```
 
+```
+[1] "1961-06-14" "2019-11-29"
+```
+
+```r
+difftime(range(ZERO$Date)[2],range(ZERO$Date)[1])
+```
+
+```
+Time difference of 21352 days
+```
+
+```r
 nrow(ZERO)
+```
+
+```
+[1] 14577
 ```
 
 
 Quandl 2/9
 ====================================
 
-
+<img src="basicR-figure/unnamed-chunk-39-1.png" title="plot of chunk unnamed-chunk-39" alt="plot of chunk unnamed-chunk-39" width="100%" style="display: block; margin: auto;" />
 
 
 Quandl 3/9
@@ -1153,6 +1187,8 @@ ZERO %>%
   ggplot(aes(Date, Value, group=Maturity, color=Maturity)) + geom_line(alpha=1)
 ```
 
+<img src="basicR-figure/unnamed-chunk-40-1.png" title="plot of chunk unnamed-chunk-40" alt="plot of chunk unnamed-chunk-40" width="100%" style="display: block; margin: auto;" />
+
 Quandl 4/9
 ====================================
 
@@ -1164,6 +1200,8 @@ ZERO %>% pivot_longer(-Date, names_to = "Maturity", values_to = "Value") %>%
   ggplot(aes(Maturity, Value, group=Date)) + geom_line(alpha=0.1) + 
   facet_wrap(~year(Date), scales = "free")
 ```
+
+<img src="basicR-figure/unnamed-chunk-41-1.png" title="plot of chunk unnamed-chunk-41" alt="plot of chunk unnamed-chunk-41" width="100%" style="display: block; margin: auto;" />
 
 
 Quandl 5/9
@@ -1178,6 +1216,8 @@ mat <- apply(ZERO_M,2,rev)
 persp(x = date, y = c(1:30), z = mat, theta = 40, phi = 25, expand = 0.4,
       ticktype = "detailed", ylab = "L?betid", xlab = "", zlab = "Rente")
 ```
+
+<img src="basicR-figure/unnamed-chunk-42-1.png" title="plot of chunk unnamed-chunk-42" alt="plot of chunk unnamed-chunk-42" width="100%" style="display: block; margin: auto;" />
 
 
 Quandl 6/9
