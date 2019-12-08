@@ -229,6 +229,57 @@ apply(df, MARGIN = 2, FUN = my_mean)
 FUN specifies the function and MARGIN specifies wether to apply to rows or columns. You could get the same result with a forloop but often apply will be more effecient.
 
 
+The pipe %>%
+========================================================
+One problem in base R is that when doing a longer analysis you either have to nest things alot, or create alot of tempoaray objects. This is solved by the magrittr package with the pipe.
+
+- It takes the LHS and puts it as the first argument in the RHS function
+
+- It can be used both with tidyverse and data.table
+
+- when there are more than 3 operations use the pipe
+
+- It is similar to the + in ggplot
+
+Lets say we have the prediction errors from a model and want to calculate RMSE
+
+$$RMSE = \sqrt{\sum^{n}_{i=1}\frac{error^2}{n}}$$
+
+
+
+
+***
+```{r}
+error <- c(2,4,5)
+```
+
+```{r}
+sqrt(mean(error^2, na.rm = TRUE))
+```
+
+```{r}
+temp1 <- error^2
+temp2 <- mean(temp1, na.rm = TRUE)
+sqrt(temp2)
+```
+
+```{r}
+error^2 %>% 
+  mean(na.rm = TRUE) %>% 
+  sqrt()
+```
+
+In this case the writing a function is probarbly smart
+
+```{r}
+RMSE = function(error){
+  sqrt(mean((error)^2))
+}
+
+RMSE(error)
+```
+
+
 Converting from wide to long data format
 ========================================================
 - Extremly important to understand
@@ -256,7 +307,7 @@ head(long, 18)
 ```
 
 
-Relational algebra
+Grouping operations
 ========================================================
 One of the most key things in R, and one of the big reasons for it's success. it's the main ingredient in pandas (python), dplyr and data.table. The operations are possible in base R, but more complicated.
 
@@ -268,14 +319,22 @@ long <- relig_income %>%
                values_to = "value", 
                -religion)
 
-long %>% group_by(religion) %>% summarize(n = n()) %>% head(10)
+long %>% 
+  group_by(religion) %>% 
+  summarize(n = n()) %>% 
+  head(5)
 ```
 
 ***
 
 ```{r}
-long %>% group_by(religion) %>% summarize(n = sum(value)) %>% head(10)
-long %>% group_by(income) %>% summarize(n = sum(value))
+long %>% 
+  group_by(religion) %>% 
+  summarize(n = sum(value)) %>% 
+  head()
+long %>% 
+  group_by(income) %>% 
+  summarize(n = sum(value))
 ```
 
 
@@ -286,12 +345,11 @@ For-loops
 ========================================================
 
 ```{r fig.align = "center", out.width = '80%', fig.height=3, fig.width=7, dpi=400}
-
 y <- rbinom(100, 1, prob = 0.5)
 x <- abs(rnorm(100)) + y
 
 fit <- glm(y ~ x, family = "binomial")
-fit$coefficients
+fit$aic
 
 ggplot(tibble(x,y), aes(x=x, y=y)) +
   geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, color="grey") +
@@ -300,24 +358,20 @@ ggplot(tibble(x,y), aes(x=x, y=y)) +
 
 ***
 
-For-loops are easy and usefull, but can sometimes be slow. I calculate simulate data and calculate a logistic regression, i then run this 10 times in a for-loop each time saving the coeffecient.
+For-loops are easy and usefull, but can sometimes be slow. I calculate simulate data and calculate a logistic regression, i then run this 10 times in a for-loop each time saving the aic.
 
 ```{r}
-
 fits <- NA
 
-for (i in 1:10) {
-  
+for (i in 1:6) {
   y   <- rbinom(100, 1, prob = 0.5)
-  x   <- abs(rnorm(100)) + y * 2
+  x   <- abs(rnorm(100)) + y
   fit <- glm(y ~ x, family = "binomial")
   
-  fits[i] <- fit$coefficients[[2]]
-  
+  fits[i] <- round(fit$aic, 2)
 }
 
-kable(fits)
-
+fits
 ```
 
 
@@ -416,68 +470,6 @@ check the calculation of the coeffecients using the matrix formula
 
 $$\hat{\beta}_{OLS}=(X'X)^{-1}X'Y$$
 
-If the results don't fit, did you forget intercept? lm(y~0+x)
-
-
-Examples
-========================================================
-
-## Inequality simulation
-Imagine you are offered the following bet with the probarbility of 50% $P$ to either increase or decrease your total wealth $M$
-
-$$
-result = P(1.5*M) | P(0.6*M)
-$$
-
-  1. What is the expected value of this bet $E(result)$
-  
-  2. Since this is a good bet, what would the effect be on the wealth of soeicity if we let all 5 million people in denmark do this bet 100 times?
-  create 
-  
-  3. What would be the effect on the average person?
-
-See code on the right for help:
-***
-
-```{r eval=T, include=TRUE}
-set.seed(3)
-individuals <- 100
-bets        <- 100
-cash        <- 100
-
-mat <- matrix(data = NA, 
-              nrow = individuals, 
-              ncol = bets)
-
-for (j in 1:individuals) {
-  for (i in 1:(bets-1)) {
-    cash[i+1] <- ifelse(rnorm(1) > 0, 
-                        cash[i] * 0.6, 
-                        cash[i] * 1.5)
-  }
-  mat[j,] <- cash
-}
-```
-
-Inequality simulation 2/2
-========================================================
-
-## Results of simulation:
-
-```{r fig.align = "center", out.width = '80%', fig.height=3, fig.width=6, dpi=400, echo=FALSE}
-mat %>% 
-  as_tibble() %>% 
-  gather() %>% 
-  mutate(key = as.numeric(str_extract(key, pattern="[0-9]+"))) %>% 
-  group_by(key) %>% 
-  summarize(mean_cash = mean(value),
-            median_cash = median(value)) %>% 
-  ungroup() %>% 
-  gather(variable, value, -key) %>% 
-  ggplot(aes(key, value)) + 
-  geom_point() + 
-  facet_wrap(~variable, scales="free")
-```
 
 
 
@@ -569,7 +561,7 @@ stargazer(m1, m2, m3, column.labels = c("Good","Better", "Best"))
 
 
 
-ggplot 1/2
+ggplot2 1/3
 ========================================================
 
 ```{r fig.align = "center", out.width = '100%', fig.height=4, fig.width=6, dpi=400}
@@ -592,7 +584,7 @@ CPS1985 %>%
 ```
 
 
-ggplot 2/3
+ggplot2 2/3
 ========================================================
 
 ```{r fig.align="center", fig.height=5, fig.width=10, out.width = '90%', dpi=400}
@@ -603,7 +595,7 @@ CPS1985 %>% ggplot(aes(age)) +
 ```
 
 
-ggplot 3/3
+ggplot2 3/3
 ========================================================
 We can also do multiple plots, there are two packages for this, gridExtra and patchwork, here is an example of patchwork
 
@@ -630,7 +622,7 @@ type: section
 
 
 
-API accest to DST with statsDK 1/5
+statsDK 1/4
 ========================================================
 
 
@@ -648,7 +640,7 @@ head(tables)
 
 
 
-statsDK 2/5
+statsDK 2/4
 ========================================================
 
 ```{r}
@@ -678,7 +670,7 @@ ggplot(GDP, aes(TID, INDHOLD, color = AREA)) +
 ```
 
 
-statsDK 3/5
+statsDK 3/4
 ========================================================
 
 ```{r}
@@ -694,7 +686,7 @@ GDP %>%
 ```
 
 
-statsDK 4/5
+statsDK 4/4
 ========================================================
 left: 40%
 
@@ -724,7 +716,7 @@ KM %>%
 
 
 
-API acess with Quandl
+Quandl 1/9
 ====================================
 
 - Create user to get API key
@@ -896,6 +888,69 @@ Other Examples
 type: section
 
 
+Examples
+========================================================
+
+## Inequality simulation
+Imagine you are offered the following bet with the probarbility of 50% $P$ to either increase or decrease your total wealth $M$
+
+$$
+result = P(1.5*M) | P(0.6*M)
+$$
+
+  1. What is the expected value of this bet $E(result)$
+  
+  2. Since this is a good bet, what would the effect be on the wealth of soeicity if we let all 5 million people in denmark do this bet 100 times?
+  create 
+  
+  3. What would be the effect on the average person?
+
+See code on the right for help:
+***
+
+```{r eval=T, include=TRUE}
+set.seed(3)
+individuals <- 100
+bets        <- 100
+cash        <- 100
+
+mat <- matrix(data = NA, 
+              nrow = individuals, 
+              ncol = bets)
+
+for (j in 1:individuals) {
+  for (i in 1:(bets-1)) {
+    cash[i+1] <- ifelse(rnorm(1) > 0, 
+                        cash[i] * 0.6, 
+                        cash[i] * 1.5)
+  }
+  mat[j,] <- cash
+}
+```
+
+
+
+Inequality simulation
+========================================================
+
+## Results of simulation:
+
+```{r fig.align = "center", out.width = '80%', fig.height=3, fig.width=6, dpi=400, echo=FALSE}
+mat %>% 
+  as_tibble() %>% 
+  gather() %>% 
+  mutate(key = as.numeric(str_extract(key, pattern="[0-9]+"))) %>% 
+  group_by(key) %>% 
+  summarize(mean_cash = mean(value),
+            median_cash = median(value)) %>% 
+  ungroup() %>% 
+  gather(variable, value, -key) %>% 
+  ggplot(aes(key, value)) + 
+  geom_point() + 
+  facet_wrap(~variable, scales="free")
+```
+
+
 
 
 Solving system of linear eqations
@@ -937,8 +992,6 @@ n <- 1000
 e <- rmvnorm(n, sigma = matrix(c(1.0, 0.9, 0.9, 1.0),2, 2))
 cor(e)
 ```
-
-
 
 ***
 
@@ -1023,7 +1076,6 @@ Principal Component Analisis (PCA)
 
 
 
-
 Estimating a Taylor rule
 ====================================
 
@@ -1087,6 +1139,10 @@ for (i in 1:nsim) {
 
 quantile(tau1, probs = c(0.01,0.025,0.05))
 ```
+
+Tips
+====================================
+type: section
 
 
 

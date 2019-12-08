@@ -267,8 +267,8 @@ z
 ```
 
 ```
- [1] 3.271874 3.924927 3.209613 4.757986 4.615037 2.572965 2.524733 4.557389
- [9] 5.955444 2.895641
+ [1] 4.069727 4.283396 3.877394 3.426738 2.575305 4.486205 3.986895 3.777976
+ [9] 3.370323 4.952528
 ```
 
 ```r
@@ -276,7 +276,7 @@ my_mean(z)
 ```
 
 ```
-[1] 3.828561
+[1] 3.880649
 ```
 
 
@@ -295,13 +295,13 @@ head(df)
 ```
 
 ```
-             x        y        z
-1 -0.731675335 2.305176 7.755123
-2  0.684088182 3.520395 8.906487
-3  0.071702470 4.409415 7.555683
-4  0.058832368 3.527037 8.714595
-5 -0.568563717 3.528980 7.691625
-6 -0.004764305 5.554057 7.047859
+            x        y        z
+1  0.74038338 3.914570 7.999957
+2 -1.88619000 3.345674 8.211377
+3  0.42082149 3.575381 7.005019
+4 -0.72390769 4.211683 8.031465
+5  0.73906933 4.012980 7.259939
+6  0.09829351 4.373547 8.340092
 ```
 
 ```r
@@ -310,10 +310,82 @@ apply(df, MARGIN = 2, FUN = my_mean)
 
 ```
           x           y           z 
--0.01170613  4.12553694  8.05463697 
+-0.05367049  4.15418129  8.06274834 
 ```
 
 FUN specifies the function and MARGIN specifies wether to apply to rows or columns. You could get the same result with a forloop but often apply will be more effecient.
+
+
+The pipe %>%
+========================================================
+One problem in base R is that when doing a longer analysis you either have to nest things alot, or create alot of tempoaray objects. This is solved by the magrittr package with the pipe.
+
+- It takes the LHS and puts it as the first argument in the RHS function
+
+- It can be used both with tidyverse and data.table
+
+- when there are more than 3 operations use the pipe
+
+- It is similar to the + in ggplot
+
+Lets say we have the prediction errors from a model and want to calculate RMSE
+
+$$RMSE = \sqrt{\sum^{n}_{i=1}\frac{error^2}{n}}$$
+
+
+
+
+***
+
+```r
+error <- c(2,4,5)
+```
+
+
+```r
+sqrt(mean(error^2, na.rm = TRUE))
+```
+
+```
+[1] 3.872983
+```
+
+
+```r
+temp1 <- error^2
+temp2 <- mean(temp1, na.rm = TRUE)
+sqrt(temp2)
+```
+
+```
+[1] 3.872983
+```
+
+
+```r
+error^2 %>% 
+  mean(na.rm = TRUE) %>% 
+  sqrt()
+```
+
+```
+[1] 3.872983
+```
+
+In this case the writing a function is probarbly smart
+
+
+```r
+RMSE = function(error){
+  sqrt(mean((error)^2))
+}
+
+RMSE(error)
+```
+
+```
+[1] 3.872983
+```
 
 
 Converting from wide to long data format
@@ -381,7 +453,7 @@ head(long, 18)
 ```
 
 
-Relational algebra
+Grouping operations
 ========================================================
 One of the most key things in R, and one of the big reasons for it's success. it's the main ingredient in pandas (python), dplyr and data.table. The operations are possible in base R, but more complicated.
 
@@ -394,50 +466,49 @@ long <- relig_income %>%
                values_to = "value", 
                -religion)
 
-long %>% group_by(religion) %>% summarize(n = n()) %>% head(10)
+long %>% 
+  group_by(religion) %>% 
+  summarize(n = n()) %>% 
+  head(5)
 ```
 
 ```
-# A tibble: 10 x 2
-   religion                    n
-   <chr>                   <int>
- 1 Agnostic                   10
- 2 Atheist                    10
- 3 Buddhist                   10
- 4 Catholic                   10
- 5 Don’t know/refused         10
- 6 Evangelical Prot           10
- 7 Hindu                      10
- 8 Historically Black Prot    10
- 9 Jehovah's Witness          10
-10 Jewish                     10
+# A tibble: 5 x 2
+  religion               n
+  <chr>              <int>
+1 Agnostic              10
+2 Atheist               10
+3 Buddhist              10
+4 Catholic              10
+5 Don’t know/refused    10
 ```
 
 ***
 
 
 ```r
-long %>% group_by(religion) %>% summarize(n = sum(value)) %>% head(10)
+long %>% 
+  group_by(religion) %>% 
+  summarize(n = sum(value)) %>% 
+  head()
 ```
 
 ```
-# A tibble: 10 x 2
-   religion                    n
-   <chr>                   <dbl>
- 1 Agnostic                  826
- 2 Atheist                   515
- 3 Buddhist                  411
- 4 Catholic                 8054
- 5 Don’t know/refused        272
- 6 Evangelical Prot         9472
- 7 Hindu                     257
- 8 Historically Black Prot  1995
- 9 Jehovah's Witness         215
-10 Jewish                    682
+# A tibble: 6 x 2
+  religion               n
+  <chr>              <dbl>
+1 Agnostic             826
+2 Atheist              515
+3 Buddhist             411
+4 Catholic            8054
+5 Don’t know/refused   272
+6 Evangelical Prot    9472
 ```
 
 ```r
-long %>% group_by(income) %>% summarize(n = sum(value))
+long %>% 
+  group_by(income) %>% 
+  summarize(n = sum(value))
 ```
 
 ```
@@ -469,12 +540,11 @@ y <- rbinom(100, 1, prob = 0.5)
 x <- abs(rnorm(100)) + y
 
 fit <- glm(y ~ x, family = "binomial")
-fit$coefficients
+fit$aic
 ```
 
 ```
-(Intercept)           x 
-  -4.805890    4.082138 
+[1] 82.45539
 ```
 
 ```r
@@ -483,43 +553,30 @@ ggplot(tibble(x,y), aes(x=x, y=y)) +
   geom_point() + labs(title="Logistic Regression")
 ```
 
-<img src="basicR-figure/unnamed-chunk-10-1.png" title="plot of chunk unnamed-chunk-10" alt="plot of chunk unnamed-chunk-10" width="80%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-15-1.png" title="plot of chunk unnamed-chunk-15" alt="plot of chunk unnamed-chunk-15" width="80%" style="display: block; margin: auto;" />
 
 ***
 
-For-loops are easy and usefull, but can sometimes be slow. I calculate simulate data and calculate a logistic regression, i then run this 10 times in a for-loop each time saving the coeffecient.
+For-loops are easy and usefull, but can sometimes be slow. I calculate simulate data and calculate a logistic regression, i then run this 10 times in a for-loop each time saving the aic.
 
 
 ```r
 fits <- NA
 
-for (i in 1:10) {
-  
+for (i in 1:6) {
   y   <- rbinom(100, 1, prob = 0.5)
-  x   <- abs(rnorm(100)) + y * 2
+  x   <- abs(rnorm(100)) + y
   fit <- glm(y ~ x, family = "binomial")
   
-  fits[i] <- fit$coefficients[[2]]
-  
+  fits[i] <- round(fit$aic, 2)
 }
 
-kable(fits)
+fits
 ```
 
-
-
-|         x|
-|---------:|
-| 10.605156|
-|  5.183389|
-|  7.733465|
-|  4.802249|
-|  5.353973|
-|  5.269631|
-|  6.282571|
-|  4.970759|
-|  4.164202|
-|  5.179387|
+```
+[1] 85.11 56.58 89.04 71.79 90.46 87.26
+```
 
 
 
@@ -563,8 +620,8 @@ table(df$x, df$y)
 ```
    
     Apple bananna pear
-  A     4       4    4
-  B    46      21   21
+  A    13       3    6
+  B    37      22   19
 ```
 
 
@@ -621,7 +678,7 @@ ggplot(data.frame(x = 0), aes(x)) +
   xlim(-2,2)
 ```
 
-<img src="basicR-figure/unnamed-chunk-16-1.png" title="plot of chunk unnamed-chunk-16" alt="plot of chunk unnamed-chunk-16" width="90%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-21-1.png" title="plot of chunk unnamed-chunk-21" alt="plot of chunk unnamed-chunk-21" width="90%" style="display: block; margin: auto;" />
 
 
 
@@ -670,56 +727,6 @@ check the calculation of the coeffecients using the matrix formula
 
 $$\hat{\beta}_{OLS}=(X'X)^{-1}X'Y$$
 
-If the results don't fit, did you forget intercept? lm(y~0+x)
-
-
-Examples
-========================================================
-
-## Inequality simulation
-Imagine you are offered the following bet with the probarbility of 50% $P$ to either increase or decrease your total wealth $M$
-
-$$
-result = P(1.5*M) | P(0.6*M)
-$$
-
-  1. What is the expected value of this bet $E(result)$
-  
-  2. Since this is a good bet, what would the effect be on the wealth of soeicity if we let all 5 million people in denmark do this bet 100 times?
-  create 
-  
-  3. What would be the effect on the average person?
-
-See code on the right for help:
-***
-
-
-```r
-set.seed(3)
-individuals <- 100
-bets        <- 100
-cash        <- 100
-
-mat <- matrix(data = NA, 
-              nrow = individuals, 
-              ncol = bets)
-
-for (j in 1:individuals) {
-  for (i in 1:(bets-1)) {
-    cash[i+1] <- ifelse(rnorm(1) > 0, 
-                        cash[i] * 0.6, 
-                        cash[i] * 1.5)
-  }
-  mat[j,] <- cash
-}
-```
-
-Inequality simulation 2/2
-========================================================
-
-## Results of simulation:
-
-<img src="basicR-figure/unnamed-chunk-19-1.png" title="plot of chunk unnamed-chunk-19" alt="plot of chunk unnamed-chunk-19" width="80%" style="display: block; margin: auto;" />
 
 
 
@@ -858,7 +865,7 @@ stargazer(m1, m2, m3, column.labels = c("Good","Better", "Best"))
 ```
 
 % Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
-% Date and time: on, dec 04, 2019 - 21:07:29
+% Date and time: sø, dec 08, 2019 - 12:56:20
 \begin{table}[!htbp] \centering 
   \caption{} 
   \label{} 
@@ -910,7 +917,7 @@ F Statistic & 44.865$^{***}$ (df = 4; 529) & 30.402$^{***}$ (df = 6; 527) & 26.2
 
 
 
-ggplot 1/2
+ggplot2 1/3
 ========================================================
 
 
@@ -922,7 +929,7 @@ CPS1985 %>%
   labs(title="Does age influence wage?")
 ```
 
-<img src="basicR-figure/unnamed-chunk-25-1.png" title="plot of chunk unnamed-chunk-25" alt="plot of chunk unnamed-chunk-25" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-28-1.png" title="plot of chunk unnamed-chunk-28" alt="plot of chunk unnamed-chunk-28" width="100%" style="display: block; margin: auto;" />
 
 
 ***
@@ -936,10 +943,10 @@ CPS1985 %>%
   facet_wrap(~ occupation, nrow = 2)
 ```
 
-<img src="basicR-figure/unnamed-chunk-26-1.png" title="plot of chunk unnamed-chunk-26" alt="plot of chunk unnamed-chunk-26" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-29-1.png" title="plot of chunk unnamed-chunk-29" alt="plot of chunk unnamed-chunk-29" width="100%" style="display: block; margin: auto;" />
 
 
-ggplot 2/3
+ggplot2 2/3
 ========================================================
 
 
@@ -950,10 +957,10 @@ CPS1985 %>% ggplot(aes(age)) +
   labs(title="How is age distributed within the marriage variable?")
 ```
 
-<img src="basicR-figure/unnamed-chunk-27-1.png" title="plot of chunk unnamed-chunk-27" alt="plot of chunk unnamed-chunk-27" width="90%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-30-1.png" title="plot of chunk unnamed-chunk-30" alt="plot of chunk unnamed-chunk-30" width="90%" style="display: block; margin: auto;" />
 
 
-ggplot 3/3
+ggplot2 3/3
 ========================================================
 We can also do multiple plots, there are two packages for this, gridExtra and patchwork, here is an example of patchwork
 
@@ -968,7 +975,7 @@ p3 <- CPS1985 %>% ggplot(aes(wage)) + geom_histogram(bins=60)
 p1 + p2 + p3
 ```
 
-<img src="basicR-figure/unnamed-chunk-28-1.png" title="plot of chunk unnamed-chunk-28" alt="plot of chunk unnamed-chunk-28" width="90%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-31-1.png" title="plot of chunk unnamed-chunk-31" alt="plot of chunk unnamed-chunk-31" width="90%" style="display: block; margin: auto;" />
 
 
 ```r
@@ -984,7 +991,7 @@ type: section
 
 
 
-API accest to DST with statsDK 1/5
+statsDK 1/4
 ========================================================
 
 
@@ -1016,7 +1023,7 @@ head(tables)
 
 
 
-statsDK 2/5
+statsDK 2/4
 ========================================================
 
 
@@ -1060,10 +1067,10 @@ ggplot(GDP, aes(TID, INDHOLD, color = AREA)) +
   geom_line()
 ```
 
-![plot of chunk unnamed-chunk-34](basicR-figure/unnamed-chunk-34-1.png)
+![plot of chunk unnamed-chunk-37](basicR-figure/unnamed-chunk-37-1.png)
 
 
-statsDK 3/5
+statsDK 3/4
 ========================================================
 
 
@@ -1074,7 +1081,7 @@ GDP %>%
   geom_line() + facet_wrap(~AREA)
 ```
 
-![plot of chunk unnamed-chunk-35](basicR-figure/unnamed-chunk-35-1.png)
+![plot of chunk unnamed-chunk-38](basicR-figure/unnamed-chunk-38-1.png)
 
 ```r
 GDP %>% 
@@ -1083,10 +1090,10 @@ GDP %>%
   geom_line() + facet_wrap(~AREA)
 ```
 
-![plot of chunk unnamed-chunk-35](basicR-figure/unnamed-chunk-35-2.png)
+![plot of chunk unnamed-chunk-38](basicR-figure/unnamed-chunk-38-2.png)
 
 
-statsDK 4/5
+statsDK 4/4
 ========================================================
 left: 40%
 
@@ -1117,7 +1124,7 @@ KM %>%
 
 
 
-API acess with Quandl
+Quandl 1/9
 ====================================
 
 - Create user to get API key
@@ -1173,7 +1180,7 @@ nrow(ZERO)
 Quandl 2/9
 ====================================
 
-<img src="basicR-figure/unnamed-chunk-39-1.png" title="plot of chunk unnamed-chunk-39" alt="plot of chunk unnamed-chunk-39" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-42-1.png" title="plot of chunk unnamed-chunk-42" alt="plot of chunk unnamed-chunk-42" width="100%" style="display: block; margin: auto;" />
 
 
 Quandl 3/9
@@ -1187,7 +1194,7 @@ ZERO %>%
   ggplot(aes(Date, Value, group=Maturity, color=Maturity)) + geom_line(alpha=1)
 ```
 
-<img src="basicR-figure/unnamed-chunk-40-1.png" title="plot of chunk unnamed-chunk-40" alt="plot of chunk unnamed-chunk-40" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-43-1.png" title="plot of chunk unnamed-chunk-43" alt="plot of chunk unnamed-chunk-43" width="100%" style="display: block; margin: auto;" />
 
 Quandl 4/9
 ====================================
@@ -1201,7 +1208,7 @@ ZERO %>% pivot_longer(-Date, names_to = "Maturity", values_to = "Value") %>%
   facet_wrap(~year(Date), scales = "free")
 ```
 
-<img src="basicR-figure/unnamed-chunk-41-1.png" title="plot of chunk unnamed-chunk-41" alt="plot of chunk unnamed-chunk-41" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-44-1.png" title="plot of chunk unnamed-chunk-44" alt="plot of chunk unnamed-chunk-44" width="100%" style="display: block; margin: auto;" />
 
 
 Quandl 5/9
@@ -1217,7 +1224,7 @@ persp(x = date, y = c(1:30), z = mat, theta = 40, phi = 25, expand = 0.4,
       ticktype = "detailed", ylab = "L?betid", xlab = "", zlab = "Rente")
 ```
 
-<img src="basicR-figure/unnamed-chunk-42-1.png" title="plot of chunk unnamed-chunk-42" alt="plot of chunk unnamed-chunk-42" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-45-1.png" title="plot of chunk unnamed-chunk-45" alt="plot of chunk unnamed-chunk-45" width="100%" style="display: block; margin: auto;" />
 
 
 Quandl 6/9
@@ -1234,7 +1241,7 @@ Quandl("FRED/BASE", api_key = key) %>%
        subtitle = "What happened in 2008?\nWhy didn't this result in inflation?")
 ```
 
-<img src="basicR-figure/unnamed-chunk-43-1.png" title="plot of chunk unnamed-chunk-43" alt="plot of chunk unnamed-chunk-43" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-46-1.png" title="plot of chunk unnamed-chunk-46" alt="plot of chunk unnamed-chunk-46" width="100%" style="display: block; margin: auto;" />
 
 ***
 
@@ -1248,7 +1255,7 @@ Quandl("FRED/WRBWFRBL", api_key = key) %>%
        subtitle="Reserve Balances With Federal Reserve Banks: Wednesday Level")
 ```
 
-<img src="basicR-figure/unnamed-chunk-44-1.png" title="plot of chunk unnamed-chunk-44" alt="plot of chunk unnamed-chunk-44" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-47-1.png" title="plot of chunk unnamed-chunk-47" alt="plot of chunk unnamed-chunk-47" width="100%" style="display: block; margin: auto;" />
 
 
 
@@ -1271,7 +1278,7 @@ Quandl("FRED/BASE", api_key = key) %>%
   labs(title = "US high-powered money (monetary base)")
 ```
 
-<img src="basicR-figure/unnamed-chunk-45-1.png" title="plot of chunk unnamed-chunk-45" alt="plot of chunk unnamed-chunk-45" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-48-1.png" title="plot of chunk unnamed-chunk-48" alt="plot of chunk unnamed-chunk-48" width="100%" style="display: block; margin: auto;" />
 
 
 
@@ -1295,7 +1302,7 @@ data %>% pivot_longer(-Date, names_to = "Variable", values_to = "Value") %>%
   labs(title="Interesting variables")
 ```
 
-<img src="basicR-figure/unnamed-chunk-46-1.png" title="plot of chunk unnamed-chunk-46" alt="plot of chunk unnamed-chunk-46" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-49-1.png" title="plot of chunk unnamed-chunk-49" alt="plot of chunk unnamed-chunk-49" width="100%" style="display: block; margin: auto;" />
 
 
 Quandl 9/9
@@ -1317,7 +1324,7 @@ data %>% pivot_longer(-Date, names_to = "Variable", values_to = "Value") %>%
   labs(title="Different types of unemployment")
 ```
 
-<img src="basicR-figure/unnamed-chunk-47-1.png" title="plot of chunk unnamed-chunk-47" alt="plot of chunk unnamed-chunk-47" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-50-1.png" title="plot of chunk unnamed-chunk-50" alt="plot of chunk unnamed-chunk-50" width="100%" style="display: block; margin: auto;" />
 
 
 
@@ -1326,6 +1333,57 @@ data %>% pivot_longer(-Date, names_to = "Variable", values_to = "Value") %>%
 Other Examples
 ====================================
 type: section
+
+
+Examples
+========================================================
+
+## Inequality simulation
+Imagine you are offered the following bet with the probarbility of 50% $P$ to either increase or decrease your total wealth $M$
+
+$$
+result = P(1.5*M) | P(0.6*M)
+$$
+
+  1. What is the expected value of this bet $E(result)$
+  
+  2. Since this is a good bet, what would the effect be on the wealth of soeicity if we let all 5 million people in denmark do this bet 100 times?
+  create 
+  
+  3. What would be the effect on the average person?
+
+See code on the right for help:
+***
+
+
+```r
+set.seed(3)
+individuals <- 100
+bets        <- 100
+cash        <- 100
+
+mat <- matrix(data = NA, 
+              nrow = individuals, 
+              ncol = bets)
+
+for (j in 1:individuals) {
+  for (i in 1:(bets-1)) {
+    cash[i+1] <- ifelse(rnorm(1) > 0, 
+                        cash[i] * 0.6, 
+                        cash[i] * 1.5)
+  }
+  mat[j,] <- cash
+}
+```
+
+
+
+Inequality simulation
+========================================================
+
+## Results of simulation:
+
+<img src="basicR-figure/unnamed-chunk-52-1.png" title="plot of chunk unnamed-chunk-52" alt="plot of chunk unnamed-chunk-52" width="80%" style="display: block; margin: auto;" />
 
 
 
@@ -1385,8 +1443,6 @@ cor(e)
 [2,] 0.8957488 1.0000000
 ```
 
-
-
 ***
 
 
@@ -1401,7 +1457,7 @@ ggplot(df, aes(w, y)) +
   labs(title = "Data with an endogeneity problem")
 ```
 
-<img src="basicR-figure/unnamed-chunk-50-1.png" title="plot of chunk unnamed-chunk-50" alt="plot of chunk unnamed-chunk-50" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-55-1.png" title="plot of chunk unnamed-chunk-55" alt="plot of chunk unnamed-chunk-55" width="100%" style="display: block; margin: auto;" />
 
 
 Generalized method of moments
@@ -1423,7 +1479,7 @@ ggplot(df, aes(w, y)) +
   labs(title = "Data with an endogeneity problem") + facet_wrap(~variable)
 ```
 
-<img src="basicR-figure/unnamed-chunk-51-1.png" title="plot of chunk unnamed-chunk-51" alt="plot of chunk unnamed-chunk-51" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-56-1.png" title="plot of chunk unnamed-chunk-56" alt="plot of chunk unnamed-chunk-56" width="100%" style="display: block; margin: auto;" />
 
 
 
@@ -1477,7 +1533,6 @@ Principal Component Analisis (PCA)
 
 
 
-
 Estimating a Taylor rule
 ====================================
 
@@ -1519,7 +1574,7 @@ df %>%
   labs(title="Danish policy rate vs. taylor rate", caption="Data from BIS and IMF")
 ```
 
-<img src="basicR-figure/unnamed-chunk-55-1.png" title="plot of chunk unnamed-chunk-55" alt="plot of chunk unnamed-chunk-55" width="100%" style="display: block; margin: auto;" />
+<img src="basicR-figure/unnamed-chunk-60-1.png" title="plot of chunk unnamed-chunk-60" alt="plot of chunk unnamed-chunk-60" width="100%" style="display: block; margin: auto;" />
 
 
 
@@ -1551,6 +1606,10 @@ quantile(tau1, probs = c(0.01,0.025,0.05))
        1%      2.5%        5% 
 -4.058600 -3.720598 -3.418613 
 ```
+
+Tips
+====================================
+type: section
 
 
 

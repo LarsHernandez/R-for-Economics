@@ -1,0 +1,58 @@
+test
+========================================================
+author: 
+date: 
+autosize: true
+
+First Slide
+========================================================
+
+For more details on authoring R presentations please visit <https://support.rstudio.com/hc/en-us/articles/200486468>.
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+Slide With Code
+========================================================
+
+```{r}
+library(tidyverse)
+```
+For-loops
+========================================================
+
+```{r fig.align = "center", out.width = '80%', fig.height=3, fig.width=7, dpi=400}
+
+y <- rbinom(100, 1, prob = 0.5)
+x <- abs(rnorm(100)) + y
+
+fit <- glm(y ~ x, family = "binomial")
+fit$aic
+
+ggplot(tibble(x,y), aes(x=x, y=y)) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, color="grey") +
+  geom_point() + labs(title="Logistic Regression")
+```
+
+***
+
+For-loops are easy and usefull, but can sometimes be slow. I calculate simulate data and calculate a logistic regression, i then run this 10 times in a for-loop each time saving the coeffecient.
+
+```{r}
+
+fits <- NA
+
+for (i in 1:6) {
+  
+  y   <- rbinom(100, 1, prob = 0.5)
+  x   <- abs(rnorm(100)) + y * 2
+  fit <- glm(y ~ x, family = "binomial")
+  
+  fits[i] <- fit$aic
+  
+}
+
+kable(fits)
+
+```
