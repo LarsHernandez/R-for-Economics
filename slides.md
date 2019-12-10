@@ -267,8 +267,8 @@ z
 ```
 
 ```
- [1] 5.633831 3.759817 3.496452 3.872916 3.419710 4.417418 3.817994 5.132328
- [9] 4.908337 3.187293
+ [1] 3.301261 3.863291 4.439823 3.712318 4.904674 4.591936 2.592481 4.745335
+ [9] 4.103275 4.443084
 ```
 
 ```r
@@ -276,7 +276,7 @@ my_mean(z)
 ```
 
 ```
-[1] 4.16461
+[1] 4.069748
 ```
 
 
@@ -296,12 +296,12 @@ head(df)
 
 ```
            x        y        z
-1  1.0864284 2.620558 6.669302
-2  1.4981430 6.357062 7.500349
-3 -1.1462975 4.415437 6.272437
-4 -0.1254300 4.847578 7.262686
-5  0.6673317 4.786587 8.626821
-6  1.5246078 6.112237 7.523466
+1 -0.3734591 4.886930 8.811208
+2  1.8227375 4.024290 8.726731
+3 -0.1805053 2.347296 8.437923
+4 -0.5220163 3.347732 7.810485
+5 -1.5267154 3.065534 8.845119
+6 -0.6648237 2.906676 5.747151
 ```
 
 ```r
@@ -310,7 +310,7 @@ apply(df, MARGIN = 2, FUN = my_mean)
 
 ```
          x          y          z 
--0.1400154  3.8500953  7.9864853 
+-0.1362908  4.1398645  8.1214783 
 ```
 
 FUN specifies the function and MARGIN specifies wether to apply to rows or columns. You could get the same result with a forloop but often apply will be more effecient.
@@ -540,7 +540,7 @@ fit$aic
 ```
 
 ```
-[1] 95.04528
+[1] 86.88466
 ```
 
 ```r
@@ -571,7 +571,7 @@ fits
 ```
 
 ```
-[1]  68.87  91.27  91.32 100.49  89.27  91.98
+[1]  90.51  88.91  85.04 111.73 107.66  96.90
 ```
 
 
@@ -602,10 +602,10 @@ head(df)
 ```
   x       y
 1 B   Apple
-2 A    pear
+2 B    pear
 3 B   Apple
-4 A bananna
-5 A   Apple
+4 B bananna
+5 B   Apple
 6 B    pear
 ```
 
@@ -616,8 +616,8 @@ table(df$x, df$y)
 ```
    
     Apple bananna pear
-  A     8       3    4
-  B    42      22   21
+  A    11       5    5
+  B    39      20   20
 ```
 
 
@@ -861,7 +861,7 @@ stargazer(m1, m2, m3, column.labels = c("Good","Better", "Best"))
 ```
 
 % Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
-% Date and time: sø, dec 08, 2019 - 20:29:52
+% Date and time: ma, dec 09, 2019 - 21:16:24
 \begin{table}[!htbp] \centering 
   \caption{} 
   \label{} 
